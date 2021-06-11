@@ -10,57 +10,74 @@ ProxyPattern = re.compile(
     flags=re.DOTALL,
 )
 
+
+
+
+count = 0
 async def scrape(*urls, debug=False):
-  
-  async with ClientSession() as session:
-    for url in urls:
-      try:
-        resp = await session.get(url)
-        if resp.status <= 400:
-          data = await resp.text()
-          for ip, port in ProxyPattern.findall(await resp.text()):
-            wfile = open('scraped proxies.txt','a')
-            wfile.write(ip+':'+port+'\n')
-            wfile.close()
-            print(f"{ip}:{port}")
-          
-              
-        else:
-          if debug:
-            print(f">>>{resp.status_code}")
-      except:
-        continue
 
-def main(*urls, debug=False):
-  loop = asyncio.new_event_loop()
-  asyncio.set_event_loop(loop)
-  try:
-    return loop.run_until_complete(scrape(*urls, debug))
-  finally:
 
-    loop.close()
-    asyncio.set_event_loop(None)
+    async with ClientSession() as session:
+        for url in urls:
+            try:
+                resp = await session.get(url)
+                if resp.status <= 400:
+                    data = await resp.text()
+                    for ip, port in ProxyPattern.findall(await resp.text()):
+                        if port != '':
+
+                            wfile = open('scraped proxies.txt', 'a')
+
+                            wfile.write(ip + ':' + port + '\n')
+
+                            wfile.close()
+
+
+
+                         #   print(f"{ip}:{port}")
+
+            except:
+                continue
+
+
+
+def removedups(inputfile, outputfile):
+    lines = open(inputfile, 'r').readlines()
+    lines_set = set(lines)
+    out = open(outputfile, 'w')
+    for line in lines_set:
+        out.write(line)
+
+
+
+def main(*urls,debug=False):
+
+    loop = asyncio.new_event_loop()
+    asyncio.set_event_loop(loop)
+
+    try:
+        return loop.run_until_complete(scrape(*urls,debug))
+
+    finally:
+        loop.close()
+        asyncio.set_event_loop(None)
+
+
 
 
 def urls():
     ''' 6 thousand proxy urls '''
 
-    file1 = open(r'C:\Users\joijm\PycharmProjects\proxies\urls.txt','r',encoding='utf-8')
+    file1 = open('proxy urls.txt', 'r', encoding='utf-8')
 
     Lines = file1.readlines()
     for line in Lines:
         yield line.strip()
-  
 
 
+#removedups('scraped proxies.txt','newt.txt')
 
-for u in urls():
-    main(u)
+#for u in urls():
+ #   main(u)
 
 
-
-"""
-if __name__ == '__main__':
-  import fire
-  fire.Fire(main)
-"""
