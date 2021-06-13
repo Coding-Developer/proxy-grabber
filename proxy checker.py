@@ -1,10 +1,42 @@
-import asyncio
-import httpx
-import aiohttp
+import asyncio, httpx
+import sys
 
-proxy_type = "http"
-test_url = "http://chatango.com/"
-timeout_sec = 15
+from bs4 import BeautifulSoup
+
+sema = asyncio.BoundedSemaphore(10)
+
+a = 0
+
+
+async def fetch(ip):
+    global a
+    a += 1
+    print(a)
+
+    try:
+        proxies = {
+            "http://": f"http://{ip}",
+            "https://": f"http://{ip}"
+        }
+
+        async with httpx.AsyncClient(proxies=proxies) as session:
+            response = await session.get('https://httpbin.org/ip')
+            resp = response.text
+            print(resp)
+
+            with open(r'C:\Users\mway\PycharmProjects\proxy-grabber\working proxies.txt', 'a') as wfile:
+                wfile.write(ip + '\n')
+
+
+
+
+    except Exception:
+        pass
+
+
+async def print_when_done(tasks):
+    for res in asyncio.as_completed(tasks):
+        await res
 
 
 def proxies():
@@ -15,28 +47,22 @@ def proxies():
         yield line.strip()
 
 
-async def is_bad_proxy(ipport):
-    with open('working proxies.txt', 'a') as wfile:
+def start():
+    coros = [
+        fetch(p)  # try username as password
 
-        try:
-            proxyurl = "http://" + ipport
-            session = aiohttp.ClientSession()
-            resp = await session.get(test_url, proxy=proxyurl)
-            print(ipport)
-            wfile.write(ipport + '\n')
+        for p in proxies()
+    ]
 
-            session.close()
-        except Exception:
-            session.close()
+    loop = asyncio.get_event_loop()
+
+    # use threads
+    all_workers = asyncio.gather(print_when_done(coros))
+
+    results = loop.run_until_complete(all_workers)
+    loop.close()
 
 
-tasks = []
-
-loop = asyncio.get_event_loop()
-
-for item in proxies():
-    tasks.append(asyncio.ensure_future(is_bad_proxy(item)))
-
-loop.run_until_complete(asyncio.wait(tasks))
-
-loop.close()
+print('Proxy checker..')
+print('Now checking..')
+start()
