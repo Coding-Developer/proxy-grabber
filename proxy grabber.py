@@ -21,11 +21,10 @@ async def scrape(*urls,limit):
 
     while _run:
 
+        try:
+            async with ClientSession() as session:
 
-        async with ClientSession() as session:
-            for url in urls:
-                try:
-
+                for url in urls:
                     resp = await session.get(url)
                     if resp.status <= 400:
                         data = await resp.text()
@@ -47,10 +46,10 @@ async def scrape(*urls,limit):
 
 
 
-                            #   print(f"{ip}:{port}")
+            break                #   print(f"{ip}:{port}")
 
-                except:
-                    continue
+        except:
+            break
 
 
 
@@ -92,7 +91,7 @@ def urls():
 
 
 for u in urls():
-    main(u,limit=7000)
+    main(u,limit=2000)
 
 
 
