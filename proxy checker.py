@@ -3,15 +3,14 @@ import sys
 
 from bs4 import BeautifulSoup
 
-sema = asyncio.BoundedSemaphore(10)
+sema = asyncio.BoundedSemaphore(100)
 
 a = 0
 
 
 async def fetch(ip):
     global a
-    a += 1
-    print(a)
+
 
     try:
         proxies = {
@@ -19,12 +18,14 @@ async def fetch(ip):
             "https://": f"http://{ip}"
         }
 
-        async with httpx.AsyncClient(proxies=proxies) as session:
+        async with httpx.AsyncClient(proxies=proxies,timeout=15) as session:
             response = await session.get('https://httpbin.org/ip')
             resp = response.text
             print(resp)
+            a += 1
+            print(a)
 
-            with open(r'C:\Users\mway\PycharmProjects\proxy-grabber\working proxies.txt', 'a') as wfile:
+            with open(r'C:\Users\mway\PycharmProjects\proxy_grabber\working proxies.txt', 'a') as wfile:
                 wfile.write(ip + '\n')
 
 
@@ -40,7 +41,7 @@ async def print_when_done(tasks):
 
 
 def proxies():
-    file1 = open(r'C:\Users\mway\PycharmProjects\proxy-grabber\scraped proxies.txt', 'r', encoding='utf-8')
+    file1 = open(r'C:\Users\mway\PycharmProjects\proxy_grabber\scraped proxies.txt', 'r', encoding='utf-8')
 
     Lines = file1.readlines()
     for line in Lines:
