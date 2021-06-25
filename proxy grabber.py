@@ -33,9 +33,11 @@ async def scrape(*urls,limit):
                                 count += 1
                                 print(count)
                                 if count == limit:
-
                                     _run = False
                                     removedups('scraped proxies.txt', 'scraped proxies.txt')
+
+                                    quit()
+
 
 
                                 wfile = open('scraped proxies.txt', 'a')
@@ -54,6 +56,7 @@ async def scrape(*urls,limit):
 
 
 def removedups(inputfile, outputfile):
+    print('deleted repeated lines.')
     lines = open(inputfile, 'r').readlines()
     lines_set = set(lines)
     out = open(outputfile, 'w')
@@ -72,6 +75,7 @@ def main(*urls,limit):
 
     finally:
         loop.close()
+
         asyncio.set_event_loop(None)
 
 
@@ -91,7 +95,7 @@ def urls():
 
 
 for u in urls():
-    main(u,limit=2000)
+    main(u,limit=40000)
 
 
 

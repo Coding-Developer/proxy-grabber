@@ -3,7 +3,7 @@ import sys
 
 from bs4 import BeautifulSoup
 
-sema = asyncio.BoundedSemaphore(100)
+sema = asyncio.BoundedSemaphore(2500)
 
 a = 0
 
@@ -12,27 +12,29 @@ async def fetch(ip):
     global a
 
 
-    try:
-        proxies = {
-            "http://": f"http://{ip}",
-            "https://": f"http://{ip}"
-        }
+    async with sema:
+        a += 1
+        print(a)
 
-        async with httpx.AsyncClient(proxies=proxies,timeout=15) as session:
-            response = await session.get('https://httpbin.org/ip')
-            resp = response.text
-            print(resp)
-            a += 1
-            print(a)
+        try:
+            proxies = {
+                "http://": f"http://{ip}",
+                "https://": f"http://{ip}"
+            }
 
-            with open(r'C:\Users\mway\PycharmProjects\proxy_grabber\working proxies.txt', 'a') as wfile:
-                wfile.write(ip + '\n')
+            async with httpx.AsyncClient(proxies=proxies,timeout=15) as session:
+                response = await session.get('https://httpbin.org/ip')
+                resp = response.text
+                   # print(resp)
+
+                with open(r'C:\Users\mway\PycharmProjects\proxy_grabber\working proxies.txt', 'a') as wfile:
+                    wfile.write(ip + '\n')
 
 
 
 
-    except Exception:
-        pass
+        except Exception:
+            pass
 
 
 async def print_when_done(tasks):
